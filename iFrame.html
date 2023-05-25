@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" http-equiv="cache-control" content="no-cache" />
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <title>List of items</title>
+</head>
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    
+    <div class="container-fluid" ng-app="frameApp" ng-controller="framectrl">
+        <table class="table table-striped table-responsive table-hover">
+            <tr>
+                <td></td>
+                <td class="col-xs-offset-2">Id</td>
+                <td class="col-xs-offset-2">Item</td>
+                <td class="col-xs-offset-2">Rate</td>
+            </tr>
+            <tr ng-repeat="x in objFrame.arritems">
+                <td class="col-xs-offset-2"><button class="btn-info" type="button" ng-click="addItem(x)">Add</button></td>
+                <td class="col-xs-offset-2">{{x.Id}}</td>
+                <td class="col-xs-offset-2">{{x.Name}}</td>
+                <td class="col-xs-offset-2">{{x.Rate}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        var app = angular.module('frameApp', []);
+
+        app.controller('framectrl', function ($scope, $http) {
+            $scope.objFrame = {};
+            $scope.temp = {};
+
+            $http({
+                method: "POST",
+                url: "myapi.asmx/showdatainmodel",
+                data: { 'ii': 'sss' }
+
+            }).then(function (response) {
+                 debugger;
+
+                $scope.objFrame = response.data.d;
+
+            });
+
+            $scope.addItem = function (x) {
+              
+                window.parent.callfromchild(x.Id);
+
+            }
+
+        });
+
+
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" http-equiv="cache-control" content="no-cache" />
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <style>
+        .siteName{
+            margin-left:800px;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        iframe{
+            height:260px;
+            width:500px;
+        }
+
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+            }
+    </style>
+
+</head>
+
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <h2 class="siteName">Billing System</h2>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid" id="myApp" ng-app="myApp" ng-controller="customersCtrl">
+        {{objbill}}
+        <br />
+        <br />
+
+        Billno <input type="text" ng-model="objbill.Billno" /><br />
+        Date <input type="text" ng-model="objbill.BillDate" /><br />
+        Customer <input type="text" id="txtcust" ng-model="objbill.CustomerCode" ng-blur="getBlur()" />{{objclient.Name}}<br />
+
+        <br />
+
+        <table class="table table-bordered table-striped table-responsive table-hover ">
+            <tr>
+                <td class="col-xs-offset-1">Item</td>
+                <td class="col-xs-offset-2">ItemName</td>
+                <td class="col-xs-offset-2">Qty</td>
+                <td class="col-xs-offset-2">Rate</td>
+                <td class="col-xs-offset-2">Amount</td>
+            </tr>
+            <tr ng-repeat="objtr in objbill.arrbilltr">
+                <td class="col-xs-offset-2"><input type="text" ng-model="objtr.Icode" ng-blur="itemBlur(objtr)" /><button class="btn-info" type="button" ng-click="OpenModal(objtr)"><span class="glyphicon glyphicon-search"></span></button></td>
+                <td class="col-xs-offset-2">{{objtr.ItemName}}</td>
+                <td class="col-xs-offset-2"><input type="text" ng-model="objtr.Qty" ng-blur="qtyBlur(objtr)" /></td>
+                <td class="col-xs-offset-2"><input type="text" ng-model="objtr.Rate" /></td>
+                <td class="col-xs-offset-2">{{objtr.Amt}}</td>
+
+            </tr>
+        </table>
+
+        <div id="myModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="close">&times;</span>
+                    <h3>List of items</h3>
+                </div>
+                
+                <iframe src="iFrame.html" title="Items"></iframe>
+            </div>
+
+        </div>
+
+        <button class="btn-primary" type="button" ng-click="addrow()">+</button><br />
+        <br />
+
+        Total Qty <input type="text" ng-model="Quantity" /><br />
+        Total Amount <input type="text" ng-model="amount" /><br />
+
+        <button class="btn-success" type="button" ng-click="savedata()">Save</button><br />
+        <input type="text" ng-model="ssbillno" />
+        <br />
+
+        <button class="btn-info" type="button" ng-click="getdata()">Get</button>
+
+    </div>
+
+
+
+
+    <script>
+
+        function callfromchild(obj) {           //Javascript function
+            //document.getElementById('txtcust').value = "xxxx";
+            var scope = angular.element(document.getElementById('myApp')).scope();
+            scope.$apply(function () {
+                scope.temp.Icode = obj;
+            });
+        }
+
+        var app = angular.module('myApp', []);
+        app.controller('customersCtrl', function ($scope, $http) {
+
+            $scope.objbill = {};
+            $scope.objclient = {};
+            $scope.objitem = {};
+            $scope.temp = {};
+
+            $scope.objbill.Billno = "";
+            $scope.objbill.BillDate = "";
+            $scope.objbill.CustomerCode = "";
+            $scope.objbill.arrbilltr = [];
+
+            $scope.objbill.arrbilltr.push({});
+
+            $scope.addrow = function () {
+                $scope.objbill.arrbilltr.push({});
+            }
+
+            $scope.getdata = function () {
+
+                $http({                            // asynchronous
+                    method: "POST",
+                    url: "myapi.asmx/getmybilldata",
+                    data: { 'ssbillno': $scope.ssbillno }
+                }).then(function (response) {
+                    debugger;
+
+                    $scope.objbill = response.data.d;
+                    $scope.getBlur();                                       //make them dependent (pehle response ayega fir fun call hpga)
+                });
+
+            }
+
+            $scope.savedata = function () {
+
+                $http({
+                    method: "POST",
+                    url: "myapi.asmx/savemydata",
+                    data: { 'mybilldata': $scope.objbill }
+                }).then(function (response) {
+                    debugger;
+
+                    alert(response.data.d);
+
+                });
+            }
+
+            $scope.getBlur = function () {
+
+                $http({
+                    method: "POST",
+                    url: "myapi.asmx/getmyblurdata",
+                    data: { 'ccode': $scope.objbill.CustomerCode }
+                }).then(function (response) {
+                    debugger;
+
+                    $scope.objclient = response.data.d;
+
+                });
+            }
+
+            $scope.itemBlur = function (objtr) {
+
+                $http({
+                    method: "POST",
+                    url: "myapi.asmx/itemblurdata",
+                    data: { 'item': objtr.Icode }
+                }).then(function (response) {
+                    debugger;
+
+                    objtr.ItemName = response.data.d.Name;
+                    objtr.Rate = response.data.d.Rate;
+
+                });
+            }
+
+            $scope.qtyBlur = function (objtr) {
+
+                objtr.Amt = parseInt(objtr.Qty) * parseInt(objtr.Rate);
+
+                $scope.showtotals();
+            }
+
+            $scope.showtotals = function () {
+
+                $scope.Quantity = 0;
+                $scope.amount = 0;
+
+                for (i = 0; i < $scope.objbill.arrbilltr.length; i++) {
+                    $scope.Quantity = $scope.Quantity + parseInt($scope.objbill.arrbilltr[i].Qty);
+                    $scope.amount = $scope.amount + parseInt($scope.objbill.arrbilltr[i].Amt);
+                }
+            }
+
+            $scope.OpenModal = function (objtr) {
+                document.getElementById("myModal").style.display = "block";
+                debugger;
+                $scope.temp = objtr;
+
+            }
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function () {
+                document.getElementById("myModal").style.display = "none";
+            }
+
+
+
+        });
+    </script>
+
+</body>
+</html>
+  
